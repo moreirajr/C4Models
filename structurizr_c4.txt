@@ -1,0 +1,131 @@
+// documentacao:
+// https://docs.structurizr.com/dsl/language
+// Visualização: https://structurizr.com/dsl
+
+workspace {
+
+    model {
+        
+        // Define atores
+        usuario = person "Usuário Comum"
+        empresa = person "Empresa"
+        medico = person "Médico"
+        
+        // define o sistema de registro de acidentes de trabalho
+        sistema = softwareSystem "Sistema de Registro de Acidentes de Trabalho" {
+            description "Permite usuários notificarem acidentes de trabalho"
+            
+            // define a camada de frontend
+            frontendApp = container "[Frontend] Web Application" {
+                description "Interface do usuário"
+                technology "ReactJS"
+                
+                // Define interacoes
+                usuario -> this "Acessa"
+                empresa -> this "Acessa"
+                medico -> this "Acessa"
+            }
+            
+            // define a camada de api
+            backendApp = container "[API] Web Application" {
+                description "Permite usuários registrarem acidentes de trabalho."
+                technology ".Net Core"
+
+                // Adiciona os componentes
+                ocorrenciasController = component "OcorrenciasController" {
+                    description "Permite usuário cadastrar, alterar e visualizar ocorrências"
+                    technology ".NET REST API Controller"
+                }
+                
+                laudosController = component "LaudosController" {
+                    description "Permite usuário cadastrar, alterar e visualizar laudos"
+                    technology ".NET REST API Controller"
+                }
+                
+                documentosController = component "DocumentosController" {
+                    description "Permite usuário cadastrar, alterar e visualizar documentos"
+                    technology ".NET REST API Controller"
+                }
+                
+                ocorrenciasComponent = component "Componente de Ocorrências" {
+                    description "Componente responsável por gerenciar Ocorrências"
+                }
+                
+                laudosComponent = component "Componente de Laudos" {
+                    description "Componente responsável por gerenciar Laudos"
+                }
+                
+                documentosComponent = component "Componente de Documentos" {
+                    description "Gerencia upload e armazenamento de documentos relacioandos aos acidentes"
+                    technology ".Net"
+                }
+                
+                notificacoesComponent = component "Componente de Notificações" {
+                    description "Envia notificações de acidente"
+                    technology ".Net"
+                }
+                
+                ocorrenciasController -> ocorrenciasComponent "Usa"
+                ocorrenciasController -> notificacoesComponent "Usa"
+                laudosController -> laudosComponent "Usa"
+                documentosController -> documentosComponent "Usa"
+            }
+            
+            database = container "Database" {
+                description "Banco de dados relacional"
+                technology "PostgreSQL"
+
+                backendApp -> this "Lê e escreve no"
+                ocorrenciasComponent -> this "Lê e escreve no"
+                laudosComponent -> this "Lê e escreve no"
+                documentosComponent -> this "Lê e escreve no"
+            }
+            
+            aws_s3 = container "AWS S3" {
+                description "Armazenamento de Documentos"
+                
+                documentosComponent -> this "Upload de documentos"
+            }
+        }
+        
+        // define o sistema externo
+        softwareExterno = softwareSystem "GOV.br" {
+            description "Integração com GOV BR"
+        }
+        
+        sistema -> softwareExterno "Integração"
+        backendApp -> softwareExterno "Integração"
+        
+        frontendApp -> backendApp "Consome API"
+        frontendApp -> ocorrenciasController "Consome API"
+        frontendApp -> laudosController "Consome API"
+        frontendApp -> documentosController "Consome API"
+        
+        notificacoesComponent -> softwareExterno "Integra"
+    }
+
+    // define os diagramas do workspace
+    views {
+        
+        // level context
+        systemContext sistema {
+            include *
+            autolayout lr
+        }
+        
+        // level container
+        container sistema {
+            include *
+            autolayout lr
+        }
+        
+        // level component
+        component backendApp {
+            include *
+            autolayout lr
+        }
+
+        theme default
+    }
+
+}
