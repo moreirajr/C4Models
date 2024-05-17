@@ -7,9 +7,10 @@ workspace {
     model {
         
         // Define atores
-        usuario = person "Usuário Comum"
-        empresa = person "Empresa"
-        medico = person "Médico"
+        usuario = person "Usuário Comum" "Trabalhador que sofreu o aciddente"
+        empresa = person "Empresa" "Gestor ou RH que notifica a ocorrência com um funcionário"
+        medico = person "Médico" "Avalia a pessoa que sofreu acidente e emite laudo"
+        tecnico = person "Técnico de Segurança" "Valida o laudo médio e notifica o Ministério do Trabalhado do ocorrido"
         
         // define o sistema de registro de acidentes de trabalho
         sistema = softwareSystem "Sistema de Registro de Acidentes de Trabalho" {
@@ -21,9 +22,10 @@ workspace {
                 technology "ReactJS"
                 
                 // Define interacoes
-                usuario -> this "Acessa"
-                empresa -> this "Acessa"
-                medico -> this "Acessa"
+                usuario -> this "Notifica ocorrência"
+                empresa -> this "Notifica ocorrência"
+                medico -> this "Cadastra laudos"
+                tecnico -> this "Notifica Ministério do Trabalho"
             }
             
             // define a camada de api
