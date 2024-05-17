@@ -7,14 +7,14 @@ workspace {
     model {
         
         // Define atores
-        usuario = person "Usuário Comum" "Trabalhador que sofreu o aciddente"
+        usuario = person "Usuário Comum" "Trabalhador que identifica um possível risco de acidente"
         empresa = person "Empresa" "Gestor ou RH que notifica a ocorrência com um funcionário"
         medico = person "Médico" "Avalia a pessoa que sofreu acidente e emite laudo"
-        tecnico = person "Técnico de Segurança" "Valida o laudo médio e notifica o Ministério do Trabalhado do ocorrido"
+        tecnico = person "Técnico de Segurança" "Valida o laudo médico e notifica o Ministério do Trabalhado do ocorrido"
         
         // define o sistema de registro de acidentes de trabalho
         sistema = softwareSystem "Sistema de Registro de Acidentes de Trabalho" {
-            description "Permite usuários notificarem acidentes de trabalho"
+            description "Permite usuários notificarem acidentes de trabalho e possíveis riscos de acidente"
             
             // define a camada de frontend
             frontendApp = container "[Frontend] Web Application" {
@@ -98,10 +98,10 @@ workspace {
         sistema -> softwareExterno "Integração"
         backendApp -> softwareExterno "Integração"
         
-        frontendApp -> backendApp "Consome API"
-        frontendApp -> ocorrenciasController "Consome API"
-        frontendApp -> laudosController "Consome API"
-        frontendApp -> documentosController "Consome API"
+        frontendApp -> backendApp "Consome API [JSON/HTTPS]"
+        frontendApp -> ocorrenciasController "Consome API [JSON/HTTPS]"
+        frontendApp -> laudosController "Consome API [JSON/HTTPS]"
+        frontendApp -> documentosController "Consome API [JSON/HTTPS]"
         
         notificacoesComponent -> softwareExterno "Integra"
     }
