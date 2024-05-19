@@ -7,10 +7,9 @@ workspace {
     model {
         
         // Define atores
-        usuario = person "Usuário Comum" "Trabalhador que identifica um possível risco de acidente"
-        empresa = person "Empresa" "Gestor ou RH que notifica a ocorrência com um funcionário"
-        medico = person "Médico" "Avalia a pessoa que sofreu acidente e emite laudo"
-        tecnico = person "Técnico de Segurança" "Valida o laudo médico e notifica o Ministério do Trabalhado do ocorrido"
+        funcionario = person "Funcionário Comum" "Trabalhador que identifica um possível risco de acidente"
+        medico = person "Médico" "Médico que atendeu um funcionário que sofreu um acidente de trabalho"
+        tecnico = person "Técnico de Segurança" "Funcionário responsável pelas medidas de segurança da empresa"
         
         // define o sistema de registro de acidentes de trabalho
         sistema = softwareSystem "Sistema de Registro de Acidentes de Trabalho" {
@@ -22,18 +21,17 @@ workspace {
                 technology "ReactJS"
                 
                 // Define interacoes
-                usuario -> this "Notifica ocorrência"
-                empresa -> this "Notifica ocorrência"
+                funcionario -> this "Cadastra eventos"
                 medico -> this "Cadastra laudos"
-                tecnico -> this "Notifica Ministério do Trabalho"
+                tecnico -> this "Cadastra ocorrências e Valida laudos"
             }
             
             // define a camada de api
             backendApp = container "[API] Web Application" {
-                description "Permite usuários registrarem acidentes de trabalho."
-                technology ".Net Core"
+                description "Fornece serviços para registraro e visualização de ocorrencia e eventos envolvendo acidentes de trabalho."
+                technology ".Net Core API"
 
-                // Adiciona os componentes
+                // Adiciona controllers
                 ocorrenciasController = component "OcorrenciasController" {
                     description "Permite usuário cadastrar, alterar e visualizar ocorrências"
                     technology ".NET REST API Controller"
@@ -44,17 +42,25 @@ workspace {
                     technology ".NET REST API Controller"
                 }
                 
-                documentosController = component "DocumentosController" {
-                    description "Permite usuário cadastrar, alterar e visualizar documentos"
+                eventoController = component "EventoController" {
+                    description "Permite usuário cadastrar, alterar e visualizar eventos"
                     technology ".NET REST API Controller"
                 }
                 
+                // Adiciona os componentes
                 ocorrenciasComponent = component "Componente de Ocorrências" {
                     description "Componente responsável por gerenciar Ocorrências"
+                    technology ".Net"
                 }
                 
                 laudosComponent = component "Componente de Laudos" {
                     description "Componente responsável por gerenciar Laudos"
+                    technology ".Net"
+                }
+                
+                eventoComponent = component "Componente de Eventos" {
+                    description "Componente responsável por gerenciar Eventos"
+                    technology ".Net"
                 }
                 
                 documentosComponent = component "Componente de Documentos" {
@@ -67,43 +73,66 @@ workspace {
                     technology ".Net"
                 }
                 
+                // adicionar Repositories
+                laudosRepository = component "Laudos Repository" {
+                    description "Classe Repository para o domínio de Laudos"
+                    technology ".Net - Repository Pattern"
+                }
+                
+                eventoRepository = component "Eventos Repository" {
+                    description "Classe Repository para o domínio de Eventos"
+                    technology ".Net - Repository Pattern"
+                }
+                
+                ocorrenciasRepository = component "Ocorrências Repository" {
+                    description "Classe Repository para o domínio de Ocorrências"
+                    technology ".Net  - Repository Pattern"
+                }
+                
                 ocorrenciasController -> ocorrenciasComponent "Usa"
                 ocorrenciasController -> notificacoesComponent "Usa"
+                ocorrenciasController -> documentosComponent "Usa"
                 laudosController -> laudosComponent "Usa"
-                documentosController -> documentosComponent "Usa"
+                laudosController -> documentosComponent "Usa"
+                eventoController -> documentosComponent "Usa"
+                eventoController -> eventoComponent "Usa"
+                
+                ocorrenciasComponent -> ocorrenciasRepository "Usa"
+                eventoComponent -> eventoRepository "Usa"
+                laudosComponent -> laudosRepository "Usa"
             }
             
             database = container "Database" {
                 description "Banco de dados relacional"
                 technology "PostgreSQL"
 
-                backendApp -> this "Lê e escreve no"
-                ocorrenciasComponent -> this "Lê e escreve no"
-                laudosComponent -> this "Lê e escreve no"
-                documentosComponent -> this "Lê e escreve no"
+                backendApp -> this "Lê e escreve no [EF core]"
+                ocorrenciasRepository -> this "Lê e escreve no [EF core]"
+                laudosRepository -> this "Lê e escreve no [EF core]"
+                eventoRepository -> this "Lê e escreve no [EF core]"
             }
             
             aws_s3 = container "AWS S3" {
-                description "Armazenamento de Documentos"
+                description "Armazenamento de Documentos/Imagens"
                 
-                documentosComponent -> this "Upload de documentos"
+                documentosComponent -> this "Upload/Download de documentos"
             }
         }
         
         // define o sistema externo
-        softwareExterno = softwareSystem "GOV.br" {
-            description "Integração com GOV BR"
+        softwareExterno = softwareSystem "eSocial" {
+            description "CAT — Comunicação de Acidente de Trabalho"
         }
         
-        sistema -> softwareExterno "Integração"
-        backendApp -> softwareExterno "Integração"
+        sistema -> softwareExterno "Integração [XML/HTTPS]"
+        backendApp -> softwareExterno "Integração [XML/HTTPS]"
         
         frontendApp -> backendApp "Consome API [JSON/HTTPS]"
         frontendApp -> ocorrenciasController "Consome API [JSON/HTTPS]"
         frontendApp -> laudosController "Consome API [JSON/HTTPS]"
-        frontendApp -> documentosController "Consome API [JSON/HTTPS]"
+        frontendApp -> eventoController "Consome API [JSON/HTTPS]"
         
-        notificacoesComponent -> softwareExterno "Integra"
+        notificacoesComponent -> softwareExterno "Integração [XML/HTTPS]"
     }
 
     // define os diagramas do workspace
