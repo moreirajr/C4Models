@@ -7,18 +7,26 @@ workspace {
     model {
         
         // Define atores
-        funcionario = person "Funcionário Comum" "Trabalhador que identifica um possível risco de acidente"
-        medico = person "Médico" "Médico que atendeu um funcionário que sofreu um acidente de trabalho"
-        tecnico = person "Técnico de Segurança" "Funcionário responsável pelas medidas de segurança da empresa"
+        funcionario = person "Funcionário Comum" "Trabalhador que identifica um possível risco de acidente"{
+            tags "ator"
+        }
+        medico = person "Médico" "Médico que atendeu um funcionário que sofreu um acidente de trabalho"{
+            tags "ator"
+        }
+        tecnico = person "Técnico de Segurança" "Funcionário responsável pelas medidas de segurança da empresa"{
+            tags "ator"
+        }
         
         // define o sistema de registro de acidentes de trabalho
         sistema = softwareSystem "Sistema de Registro de Acidentes de Trabalho" {
             description "Permite usuários notificarem acidentes de trabalho e possíveis riscos de acidente"
+            tags "sistemaInterno"
             
             // define a camada de frontend
             frontendApp = container "[Frontend] Web Application" {
                 description "Interface do usuário"
                 technology "ReactJS"
+                tags "sistemaInterno"
                 
                 // Define interacoes
                 funcionario -> this "Cadastra eventos"
@@ -30,63 +38,75 @@ workspace {
             backendApp = container "[API] Web Application" {
                 description "Fornece serviços para registraro e visualização de ocorrencia e eventos envolvendo acidentes de trabalho."
                 technology ".Net Core API"
-
+                tags "sistemaInterno"
+                
                 // Adiciona controllers
                 ocorrenciasController = component "OcorrenciasController" {
                     description "Permite usuário cadastrar, alterar e visualizar ocorrências"
                     technology ".NET REST API Controller"
+                    tags "sistemaInterno"
                 }
                 
                 laudosController = component "LaudosController" {
                     description "Permite usuário cadastrar, alterar e visualizar laudos"
                     technology ".NET REST API Controller"
+                    tags "sistemaInterno"
                 }
                 
                 eventoController = component "EventoController" {
                     description "Permite usuário cadastrar, alterar e visualizar eventos"
                     technology ".NET REST API Controller"
+                    tags "sistemaInterno"
                 }
                 
                 // Adiciona os componentes
                 ocorrenciasComponent = component "Componente de Ocorrências" {
                     description "Componente responsável por gerenciar Ocorrências"
                     technology ".Net"
+                    tags "sistemaInterno"
                 }
                 
                 laudosComponent = component "Componente de Laudos" {
                     description "Componente responsável por gerenciar Laudos"
                     technology ".Net"
+                    tags "sistemaInterno"
                 }
                 
                 eventoComponent = component "Componente de Eventos" {
                     description "Componente responsável por gerenciar Eventos"
                     technology ".Net"
+                    tags "sistemaInterno"
                 }
                 
                 documentosComponent = component "Componente de Documentos" {
                     description "Gerencia upload e armazenamento de documentos relacioandos aos acidentes"
                     technology ".Net"
+                    tags "sistemaInterno"
                 }
                 
                 notificacoesComponent = component "Componente de Notificações" {
                     description "Envia notificações de acidente"
                     technology ".Net"
+                    tags "sistemaInterno"
                 }
                 
                 // adicionar Repositories
                 laudosRepository = component "Laudos Repository" {
                     description "Classe Repository para o domínio de Laudos"
                     technology ".Net - Repository Pattern"
+                    tags "sistemaInterno"
                 }
                 
                 eventoRepository = component "Eventos Repository" {
                     description "Classe Repository para o domínio de Eventos"
                     technology ".Net - Repository Pattern"
+                    tags "sistemaInterno"
                 }
                 
                 ocorrenciasRepository = component "Ocorrências Repository" {
                     description "Classe Repository para o domínio de Ocorrências"
                     technology ".Net  - Repository Pattern"
+                    tags "sistemaInterno"
                 }
                 
                 ocorrenciasController -> ocorrenciasComponent "Usa"
@@ -105,23 +125,26 @@ workspace {
             database = container "Database" {
                 description "Banco de dados relacional"
                 technology "PostgreSQL"
+                tags "database"
 
                 backendApp -> this "Lê e escreve no [EF core]"
                 ocorrenciasRepository -> this "Lê e escreve no [EF core]"
                 laudosRepository -> this "Lê e escreve no [EF core]"
                 eventoRepository -> this "Lê e escreve no [EF core]"
             }
-            
-            aws_s3 = container "AWS S3" {
-                description "Armazenamento de Documentos/Imagens"
-                
-                documentosComponent -> this "Upload/Download de documentos"
-            }
         }
         
+        aws_s3 = softwareSystem "AWS S3" {
+            description "Armazenamento de Documentos/Imagens"
+            tags "sistermaExterno"
+                
+            documentosComponent -> this "Upload/Download de documentos"
+        }
+            
         // define o sistema externo
         softwareExterno = softwareSystem "eSocial" {
             description "CAT — Comunicação de Acidente de Trabalho"
+            tags "sistermaExterno"
         }
         
         sistema -> softwareExterno "Integração [XML/HTTPS]"
@@ -156,7 +179,26 @@ workspace {
             autolayout lr
         }
 
-        theme default
+        // theme default
+        styles {
+            element "ator" {
+                background #1168bd
+                color #ffffff
+            }
+            element "sistemaInterno" {
+                background #1168bd
+                color #ffffff
+            }
+            element "sistemaExterno" {
+                background #1168bd
+                color #dddddd
+            }
+            element "database" {
+                background #1168bd
+                color #ffffff
+                shape Cylinder
+            }
+        }
     }
 
 }
