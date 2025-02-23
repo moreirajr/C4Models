@@ -1,0 +1,216 @@
+// documentacao:
+// https://docs.structurizr.com/dsl/language
+// Visualização: https://structurizr.com/dsl
+
+workspace {
+
+    model {
+        
+        // Define atores
+        professor = person "Professor" "Lança notas e acompanha o desempenho de suas turmas"{
+            tags "ator"
+        }
+        aluno = person "Aluno" "Consulta notas, históricos acadêmicos e status de matrícula"{
+            tags "ator"
+        }
+        administrador = person "Administrador" "Gerencia matrículas, históricos escolares e relatórios financeiros"{
+            tags "ator"
+        }
+        
+        // Define o sistema acadêmico modernizado
+        sistema = softwareSystem "Portal Acadêmico" {
+            description "Novo portal acadêmico para alunos e professores"
+            tags "sistemaInterno"
+            
+           frontendApp = container "[Frontend] Web Application" {
+                description "Interface do usuário"
+                technology "ReactJS"
+                tags "sistemaInterno"
+                
+                professor -> this "Lança notas e consulta turmas"
+                aluno -> this "Consulta histórico, notas e status de matrícula"
+                administrador -> this "Gerencia matrículas, históricos escolares e relatórios financeiros"
+            }
+            
+            backendApp = container "[API] Web Application" {
+                description "Fornece serviços para gerenciamento acadêmico"
+                technology ".Net Core API"
+                tags "sistemaInterno"
+                
+                // Controllers:
+                notasController = component "NotasController" {
+                    description "Gerencia lançamento e consulta de notas"
+                    technology ".NET REST API Controller"
+                    tags "sistemaInterno"
+                }
+                
+                historicoController = component "HistoricoController" {
+                    description "Fornece acesso ao histórico acadêmico dos alunos"
+                    technology ".NET REST API Controller"
+                    tags "sistemaInterno"
+                }
+                
+                notificacoesController = component "NotificacoesController" {
+                    description "Gerencia envio de notificações sobre deadlines acadêmicos"
+                    technology ".NET REST API Controller"
+                    tags "sistemaInterno"
+                }
+                
+                arquivosMECController = component "ArquivosMECController" {
+                    description "Exporta e envia relatórios acadêmicos exigidos pelo MEC"
+                    technology ".NET REST API Controller"
+                    tags "sistemaInterno"
+                }
+                
+                operacoesFinanceirasController = component "OperacoesFinanceirasController" {
+                    description "Gerencia operações financeiras, como geração de boleto."
+                    technology ".NET REST API Controller"
+                    tags "sistemaInterno"
+                }
+                
+                // Components:
+                alunosComponent = component "Componente de Alunos"{
+                    description "Gerencia funcionalidades relacionadas a Alunos."
+                    technology ".Net"
+                    tags "sistemaInterno"
+                }
+                
+                historicoComponent = component "Componente de Históricos Escolares"{
+                    description "Gerencia funcionalidades relacionadas a Históricos Escolares."
+                    technology ".Net"
+                    tags "sistemaInterno"
+                }
+                
+                notificacoesComponent = component "Componente de Notificações"{
+                    description "Gerencia funcionalidades relacionadas a Notificações."
+                    technology ".Net"
+                    tags "sistemaInterno"
+                }
+                
+                operacoesFinanceirasComponent = component "Componente de Operações Financeiras"{
+                    description "Gerencia funcionalidades relacionadas ao financeiro.."
+                    technology ".Net"
+                    tags "sistemaInterno"
+                }
+                
+                mecIntegrationComponent = component "Componente de Integração MEC" {
+                    description "Gera arquivos necessário para envio de informações ao MEC."
+                    technology ".Net"
+                    tags "sistemaInterno"
+                }
+                
+                totvsIntegrationComponent = component "Componente de Integração TOTVS" {
+                    description "Sincroniza contratos de professores e pagamentos com TOTVS."
+                    technology ".Net"
+                    tags "sistemaInterno"
+                }
+                
+                // Repositories:
+                alunosRepository = component "Repositório de Alunos" {
+                    description "Classe Repository para o domínio de Alunos"
+                    technology ".Net - Repository Pattern"
+                    tags "sistemaInterno"
+                }
+                
+                professoresRepository = component "Repositório de Professores" {
+                    description "Classe Repository para o domínio de Professores"
+                    technology ".Net - Repository Pattern"
+                    tags "sistemaInterno"
+                }
+                
+                operacoesFinanceirasRepository = component "Repositório de Operações Financeiras" {
+                    description "Classe Repository para o domínio de Operaçoes Financeiras"
+                    technology ".Net - Repository Pattern"
+                    tags "sistemaInterno"
+                }
+                
+                // Relationship between components:
+                notasController -> alunosComponent "Usa"
+                historicoController -> historicoComponent "Usa"
+                notificacoesController -> notificacoesComponent "Usa"
+                arquivosMECController -> mecIntegrationComponent "Usa"
+                operacoesFinanceirasController -> operacoesFinanceirasComponent "Usa"
+                
+                alunosComponent -> alunosRepository "Acessa"
+                historicoComponent -> alunosRepository "Acessa"
+                historicoComponent -> professoresRepository "Acessa"
+                operacoesFinanceirasComponent -> operacoesFinanceirasRepository "Acessa"
+                operacoesFinanceirasComponent -> totvsIntegrationComponent "Usa"
+                
+            }
+            
+            database = container "Database" {
+                description "Banco de dados relacional"
+                technology "PostgreSQL"
+                tags "database"
+
+                backendApp -> this "Lê e escreve no [EF core]"
+            }
+        }
+        
+        sistemaLegado = softwareSystem "Sistema Acadêmico Legado" {
+            description "Sistema atual baseado em COBOL/CICS"
+            tags "sistemaExterno"
+        }
+        
+        mecSistema = softwareSystem "MEC" {
+            description "Recebe relatórios acadêmicos e de matrícula"
+            tags "sistemaExterno"
+            
+            mecIntegrationComponent -> this "Integração MEC"
+        }
+        
+        totvsSistema = softwareSystem "TOTVS" {
+            description "Gerencia folha de pagamento e contratos de professores"
+            tags "sistemaExterno"
+            
+            totvsIntegrationComponent -> this "Integraçao TOTVS"
+        }
+        
+        sistema -> sistemaLegado "Integração para transição gradual"
+        backendApp -> sistemaLegado "Consulta e migra dados [SOAP/HTTPS]"
+        backendApp -> mecSistema "Exporta dados acadêmicos [FTP]"
+        backendApp -> totvsSistema "Sincroniza contratos e pagamentos [REST/HTTPS]"
+        frontendApp -> backendApp "Consome API [JSON/HTTPS]"
+        backendApp -> database "Lê e escreve no banco acadêmico [EF Core]"
+    }
+
+    // define os diagramas do workspace
+    views {
+        
+        // level context
+        systemContext sistema {
+            include *
+            autolayout lr
+        }
+        
+        // level container
+        container sistema {
+            include *
+            autolayout lr
+        }
+        
+        // level component
+        component backendApp {
+            include *
+            autolayout lr
+        }
+
+        // theme default
+        styles {
+            element "ator" {
+                background #1168bd
+                color #ffffff
+            }
+            element "sistemaInterno" {
+                background #1168bd
+                color #ffffff
+            }
+            element "database" {
+                background #1168bd
+                color #ffffff
+                shape Cylinder
+            }
+        }
+    }
+}
